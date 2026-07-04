@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todolist Aion Affranchi</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06070d; --panel: #0e1020; --panel2: #121526;
+  --border: #1e2340; --border-gold: #8a6a28; --border-gold-light: #c49a3c;
+  --gold: #d4a832; --gold-light: #f0c84a; --gold-dim: #8a6a28;
+  --blue: #4a7fd4; --blue-light: #6a9ff4;
+  --silver: #a0aabf; --silver-dim: #5a6070;
+  --text: #d8dae8; --text-dim: #6870a0; --checked-text: #3a3d55;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'EB Garamond', Georgia, serif;
+  min-height: 100vh; padding: 36px 20px 60px;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% 0%, rgba(74,127,212,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 30% at 50% 100%, rgba(212,168,50,0.05) 0%, transparent 60%),
+    repeating-linear-gradient(0deg,transparent,transparent 80px,rgba(30,35,64,0.15) 80px,rgba(30,35,64,0.15) 81px),
+    repeating-linear-gradient(90deg,transparent,transparent 80px,rgba(30,35,64,0.1) 80px,rgba(30,35,64,0.1) 81px);
+}
+
+/* ═══ LAYOUT ═══ */
+.page-wrap { max-width: 1100px; margin: 0 auto; display: flex; gap: 28px; align-items: flex-start; }
+.main-col { flex: 1; min-width: 0; }
+
+/* ═══ HEADER ═══ */
+.header { text-align:center; margin-bottom:48px; }
+.emblem { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:12px; }
+.wing { width:80px; height:40px; opacity:0.6; }
+.title-main { font-family:'Cinzel Decorative',serif; font-size:clamp(1.1rem,3vw,1.7rem); font-weight:700; color:var(--gold-light); letter-spacing:0.1em; text-shadow:0 0 30px rgba(212,168,50,0.5),0 0 60px rgba(212,168,50,0.2); line-height:1; }
+.title-sub { font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.4em; color:var(--silver-dim); text-transform:uppercase; margin-top:8px; }
+.header-divider { display:flex; align-items:center; gap:12px; margin-top:20px; justify-content:center; }
+.divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--border-gold),transparent); }
+.divider-diamond { width:6px; height:6px; background:var(--gold); transform:rotate(45deg); box-shadow:0 0 8px var(--gold); }
+.date-text { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.2em; color:var(--text-dim); text-transform:uppercase; margin-top:12px; }
+.credit { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.2em; color:var(--text-dim); margin-top:8px; font-style:italic; }
+
+/* ═══ SECTION ═══ */
+.section { margin-bottom:36px; }
+.section-frame { border:1px solid var(--border); border-radius:2px; background:var(--panel); position:relative; overflow:hidden; }
+.section-frame::before { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,255,255,0.02) 0%,transparent 50%); pointer-events:none; }
+.section-frame::after { content:''; position:absolute; top:0; left:0; width:20px; height:20px; border-top:2px solid var(--border-gold-light); border-left:2px solid var(--border-gold-light); pointer-events:none; }
+.corner-tr,.corner-bl,.corner-br { position:absolute; width:20px; height:20px; pointer-events:none; z-index:2; }
+.corner-tr { top:0; right:0; border-top:2px solid var(--border-gold-light); border-right:2px solid var(--border-gold-light); }
+.corner-bl { bottom:0; left:0; border-bottom:2px solid var(--border-gold-light); border-left:2px solid var(--border-gold-light); }
+.corner-br { bottom:0; right:0; border-bottom:2px solid var(--border-gold-light); border-right:2px solid var(--border-gold-light); }
+.section-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 14px; border-bottom:1px solid var(--border); }
+.daily .section-header { background:linear-gradient(to right,rgba(212,168,50,0.06),transparent); }
+.weekly .section-header { background:linear-gradient(to right,rgba(74,127,212,0.06),transparent); }
+.section-header-left { display:flex; align-items:center; gap:10px; }
+.section-icon { width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
+.section-name { font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; }
+.daily .section-name { color:var(--gold-light); }
+.weekly .section-name { color:var(--blue-light); }
+.header-right { display:flex; align-items:center; gap:12px; }
+.progress-badge { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; padding:3px 10px; border-radius:20px; }
+.daily .progress-badge { border:1px solid var(--border-gold); color:var(--gold-dim); background:rgba(212,168,50,0.05); }
+.weekly .progress-badge { border:1px solid #2a3d5a; color:#4a6090; background:rgba(74,127,212,0.05); }
+.reset-section-btn { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.12em; text-transform:uppercase; border-radius:2px; cursor:pointer; padding:5px 10px; transition:all 0.25s; }
+.daily .reset-section-btn { background:rgba(212,168,50,0.06); border:1px solid var(--border-gold); color:var(--gold-dim); }
+.daily .reset-section-btn:hover { background:rgba(212,168,50,0.14); border-color:var(--gold); color:var(--gold-light); }
+.weekly .reset-section-btn { background:rgba(74,127,212,0.06); border:1px solid #2a3d5a; color:#4a6090; }
+.weekly .reset-section-btn:hover { background:rgba(74,127,212,0.14); border-color:var(--blue); color:var(--blue-light); }
+
+/* TASKS */
+.task-list { padding:10px 14px; display:flex; flex-direction:column; gap:4px; }
+.task-item { display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:2px; cursor:pointer; transition:all 0.2s; border:1px solid transparent; user-select:none; animation:fadeSlide 0.18s ease; }
+.task-item:hover { background:var(--panel2); }
+.daily .task-item:hover { border-color:rgba(212,168,50,0.15); }
+.weekly .task-item:hover { border-color:rgba(74,127,212,0.15); }
+.task-item.checked { opacity:0.4; }
+.checkbox { width:18px; height:18px; border-radius:1px; border:1px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.daily .task-item:hover .checkbox { border-color:var(--border-gold); }
+.weekly .task-item:hover .checkbox { border-color:var(--blue); }
+.daily .task-item.checked .checkbox { background:rgba(212,168,50,0.1); border-color:var(--gold); box-shadow:0 0 8px rgba(212,168,50,0.3); }
+.weekly .task-item.checked .checkbox { background:rgba(74,127,212,0.1); border-color:var(--blue); box-shadow:0 0 8px rgba(74,127,212,0.3); }
+.checkbox svg { opacity:0; transform:scale(0.4); transition:all 0.18s; }
+.task-item.checked .checkbox svg { opacity:1; transform:scale(1); }
+.task-label { flex:1; font-size:0.95rem; color:var(--silver); transition:color 0.2s; }
+.task-item.checked .task-label { color:var(--checked-text); text-decoration:line-through; }
+.del-btn { font-size:0.9rem; color:var(--text-dim); opacity:0; transition:opacity 0.2s; padding:0 2px; line-height:1; }
+.task-item:hover .del-btn { opacity:1; }
+.del-btn:hover { color:#c04040 !important; }
+
+.add-area { padding:10px 14px 14px; border-top:1px solid var(--border); display:flex; gap:8px; }
+.add-input { flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:2px; padding:9px 14px; color:var(--text); font-family:'EB Garamond',serif; font-size:0.9rem; outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
+.add-input::placeholder { color:var(--text-dim); font-style:italic; }
+.daily .add-input:focus { border-color:var(--border-gold); box-shadow:0 0 10px rgba(212,168,50,0.1); }
+.weekly .add-input:focus { border-color:var(--blue); box-shadow:0 0 10px rgba(74,127,212,0.1); }
+.add-btn { padding:9px 16px; border-radius:2px; font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.1em; cursor:pointer; transition:all 0.2s; }
+.daily .add-btn { background:rgba(212,168,50,0.08); border:1px solid var(--border-gold); color:var(--gold); }
+.daily .add-btn:hover { background:rgba(212,168,50,0.18); color:var(--gold-light); }
+.weekly .add-btn { background:rgba(74,127,212,0.08); border:1px solid #2a3d5a; color:var(--blue); }
+.weekly .add-btn:hover { background:rgba(74,127,212,0.18); color:var(--blue-light); }
+.empty-state { text-align:center; padding:20px; font-style:italic; font-size:0.85rem; color:var(--text-dim); }
+
+.global-reset-wrap { text-align:center; margin-top:20px; }
+.global-reset-btn { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.25em; text-transform:uppercase; background:rgba(138,106,40,0.06); border:1px solid var(--border-gold); color:var(--gold-dim); padding:10px 28px; cursor:pointer; transition:all 0.3s; border-radius:1px; }
+.global-reset-btn:hover { background:rgba(212,168,50,0.1); border-color:var(--gold-light); color:var(--gold-light); box-shadow:0 0 20px rgba(212,168,50,0.2); }
+
+@keyframes fadeSlide { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══ LIENS UTILES (sidebar) ═══ */
+.links-col {
+  width: 240px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 30px;
+}
+
+.links-frame {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--panel);
+  position: relative;
+  overflow: hidden;
+}
+.links-frame::before { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,255,255,0.02) 0%,transparent 50%); pointer-events:none; }
+.links-frame::after { content:''; position:absolute; top:0; left:0; width:16px; height:16px; border-top:2px solid var(--border-gold-light); border-left:2px solid var(--border-gold-light); pointer-events:none; }
+.lc-tr,.lc-bl,.lc-br { position:absolute; width:16px; height:16px; pointer-events:none; z-index:2; }
+.lc-tr { top:0; right:0; border-top:2px solid var(--border-gold-light); border-right:2px solid var(--border-gold-light); }
+.lc-bl { bottom:0; left:0; border-bottom:2px solid var(--border-gold-light); border-left:2px solid var(--border-gold-light); }
+.lc-br { bottom:0; right:0; border-bottom:2px solid var(--border-gold-light); border-right:2px solid var(--border-gold-light); }
+
+.links-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(to right, rgba(212,168,50,0.05), transparent);
+}
+.links-header-icon { font-size: 1rem; }
+.links-header-title { font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold-light); }
+
+.links-list { padding: 8px 10px; display:flex; flex-direction:column; gap:4px; }
+
+.link-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  animation: fadeSlide 0.18s ease;
+}
+.link-item:hover { background: var(--panel2); border-color: rgba(212,168,50,0.15); }
+
+.link-favicon {
+  width: 16px; height: 16px; flex-shrink: 0;
+  border-radius: 2px; object-fit: cover;
+}
+.link-favicon-fallback {
+  width: 16px; height: 16px; flex-shrink: 0;
+  border-radius: 2px; background: rgba(212,168,50,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; color: var(--gold);
+}
+
+.link-anchor {
+  flex: 1; font-size: 0.82rem; color: var(--silver);
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+.link-anchor:hover { color: var(--gold-light); }
+
+.link-del {
+  font-size: 0.8rem; color: var(--text-dim); opacity:0; cursor:pointer;
+  transition: opacity 0.2s; line-height:1; padding:0 2px; flex-shrink:0;
+}
+.link-item:hover .link-del { opacity:1; }
+.link-del:hover { color:#c04040 !important; }
+
+.links-add-area {
+  padding: 8px 10px 12px;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.links-add-row { display:flex; gap:6px; }
+.link-input {
+  flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--border);
+  border-radius:2px; padding:7px 10px; color:var(--text);
+  font-family:'EB Garamond',serif; font-size:0.82rem; outline:none;
+  transition:border-color 0.2s;
+}
+.link-input::placeholder { color:var(--text-dim); font-style:italic; font-size:0.78rem; }
+.link-input:focus { border-color:var(--border-gold); box-shadow:0 0 8px rgba(212,168,50,0.1); }
+.link-add-btn {
+  padding:7px 10px; border-radius:2px; font-family:'Cinzel',serif;
+  font-size:0.72rem; letter-spacing:0.08em; cursor:pointer; transition:all 0.2s;
+  background:rgba(212,168,50,0.08); border:1px solid var(--border-gold); color:var(--gold);
+  white-space: nowrap;
+}
+.link-add-btn:hover { background:rgba(212,168,50,0.18); color:var(--gold-light); }
+
+.links-empty { text-align:center; padding:16px; font-style:italic; font-size:0.8rem; color:var(--text-dim); }
+
+/* ═══ POST-IT ═══ */
+#postit {
+  position:fixed; width:240px; min-height:200px;
+  background:linear-gradient(160deg,#f9e87a 0%,#f5d800 100%);
+  border-radius:2px 12px 2px 2px;
+  box-shadow:4px 6px 20px rgba(0,0,0,0.5),2px 2px 0 rgba(0,0,0,0.15);
+  z-index:1000; display:flex; flex-direction:column; user-select:none;
+}
+#postit::before { content:''; position:absolute; top:0; right:0; width:0; height:0; border-style:solid; border-width:0 24px 24px 0; border-color:transparent #c9b000 transparent transparent; }
+.postit-header { display:flex; align-items:center; justify-content:space-between; padding:8px 10px 4px; cursor:grab; background:rgba(0,0,0,0.07); border-radius:2px 12px 0 0; border-bottom:1px solid rgba(0,0,0,0.08); }
+.postit-header:active { cursor:grabbing; }
+.postit-title { font-family:'Caveat',cursive; font-size:1rem; font-weight:600; color:#5a4800; }
+.postit-actions { display:flex; gap:4px; }
+.postit-btn { width:22px; height:22px; border-radius:50%; border:none; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center; transition:all 0.15s; background:rgba(0,0,0,0.1); color:#5a4800; }
+.postit-btn:hover { background:rgba(0,0,0,0.2); }
+.postit-body { flex:1; padding:8px 10px 10px; display:flex; flex-direction:column; }
+.postit-textarea { width:100%; min-height:120px; background:transparent; border:none; outline:none; resize:none; font-family:'Caveat',cursive; font-size:1rem; color:#3a3000; line-height:1.6; }
+.postit-textarea::placeholder { color:#b09a30; }
+.postit-toggle { position:fixed; bottom:24px; right:24px; width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,#f9e87a,#f5d800); border:none; cursor:pointer; font-size:1.3rem; box-shadow:0 4px 16px rgba(0,0,0,0.4); transition:all 0.2s; z-index:999; display:flex; align-items:center; justify-content:center; }
+.postit-toggle:hover { transform:scale(1.1); box-shadow:0 6px 20px rgba(245,216,0,0.4); }
+
+@media (max-width: 780px) {
+  .page-wrap { flex-direction: column; }
+  .links-col { width: 100%; position: static; }
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- MAIN -->
+  <div class="main-col">
+    <div class="header">
+      <div class="emblem">
+        <svg class="wing" style="transform:scaleX(-1)" viewBox="0 0 90 45" fill="none">
+          <path d="M5 38 Q20 20 45 28 Q60 32 80 10" stroke="#c49a3c" stroke-width="1" fill="none" opacity="0.7"/>
+          <path d="M10 40 Q25 25 50 32 Q65 36 82 18" stroke="#c49a3c" stroke-width="0.8" fill="none" opacity="0.5"/>
+          <path d="M15 41 Q30 28 55 35 Q68 38 83 25" stroke="#c49a3c" stroke-width="0.6" fill="none" opacity="0.35"/>
+        </svg>
+        <div>
+          <div class="title-main">Todolist - OWNED </div>
+        </div>
+        <svg class="wing" viewBox="0 0 90 45" fill="none">
+          <path d="M5 38 Q20 20 45 28 Q60 32 80 10" stroke="#c49a3c" stroke-width="1" fill="none" opacity="0.7"/>
+          <path d="M10 40 Q25 25 50 32 Q65 36 82 18" stroke="#c49a3c" stroke-width="0.8" fill="none" opacity="0.5"/>
+          <path d="M15 41 Q30 28 55 35 Q68 38 83 25" stroke="#c49a3c" stroke-width="0.6" fill="none" opacity="0.35"/>
+        </svg>
+      </div>
+      <div class="title-sub">Livre des Tâches — Outils crée pour les membres de la Legion OWNED</div>
+      <div class="header-divider">
+        <div class="divider-line"></div>
+        <div class="divider-diamond"></div>
+        <div class="divider-line"></div>
+      </div>
+      <div class="date-text" id="dateDisplay"></div>
+      <div class="credit">Créé par Sneek / Noheal</div>
+    </div>
+
+    <div class="section daily">
+      <div class="section-frame">
+        <div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div>
+        <div class="section-header">
+          <div class="section-header-left">
+            <div class="section-icon">☀</div>
+            <div><div class="section-name">Tâches Quotidiennes</div></div>
+          </div>
+          <div class="header-right">
+            <div class="progress-badge" id="daily-progress">0 / 0</div>
+            <button class="reset-section-btn" onclick="resetSection('daily')">↺ Reset</button>
+          </div>
+        </div>
+        <div class="task-list" id="daily-list"></div>
+        <div class="add-area">
+          <input class="add-input" id="daily-input" type="text" placeholder="Ajouter une tâche quotidienne…" onkeydown="handleKey(event,'daily')">
+          <button class="add-btn" onclick="addTask('daily')">+ Ajouter</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section weekly">
+      <div class="section-frame">
+        <div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div>
+        <div class="section-header">
+          <div class="section-header-left">
+            <div class="section-icon">🌙</div>
+            <div><div class="section-name">Tâches Hebdomadaires</div></div>
+          </div>
+          <div class="header-right">
+            <div class="progress-badge" id="weekly-progress">0 / 0</div>
+            <button class="reset-section-btn" onclick="resetSection('weekly')">↺ Reset</button>
+          </div>
+        </div>
+        <div class="task-list" id="weekly-list"></div>
+        <div class="add-area">
+          <input class="add-input" id="weekly-input" type="text" placeholder="Ajouter une tâche hebdomadaire…" onkeydown="handleKey(event,'weekly')">
+          <button class="add-btn" onclick="addTask('weekly')">+ Ajouter</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="global-reset-wrap">
+      <button class="global-reset-btn" onclick="resetAll()">⟳ &nbsp; Réinitialiser toutes les tâches</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR LIENS -->
+  <div class="links-col">
+    <div class="links-frame">
+      <div class="lc-tr"></div><div class="lc-bl"></div><div class="lc-br"></div>
+      <div class="links-header">
+        <span class="links-header-icon">🔗</span>
+        <span class="links-header-title">Liens Utiles</span>
+      </div>
+      <div class="links-list" id="links-list"></div>
+      <div class="links-add-area">
+        <input class="link-input" id="link-label-input" type="text" placeholder="Nom du lien…" onkeydown="handleLinkKey(event)">
+        <input class="link-input" id="link-url-input" type="text" placeholder="https://…" onkeydown="handleLinkKey(event)">
+        <div class="links-add-row">
+          <button class="link-add-btn" style="width:100%" onclick="addLink()">+ Ajouter un lien</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- POST-IT -->
+<div id="postit">
+  <div class="postit-header" id="postit-handle">
+    <span class="postit-title">📌 Notes</span>
+    <div class="postit-actions">
+      <button class="postit-btn" onclick="clearPostit()" title="Effacer">🗑</button>
+      <button class="postit-btn" onclick="togglePostit()" title="Réduire">−</button>
+    </div>
+  </div>
+  <div class="postit-body" id="postit-body">
+    <textarea class="postit-textarea" id="postit-text" placeholder="Écris tes notes ici…" oninput="savePostit()"></textarea>
+  </div>
+</div>
+<button class="postit-toggle" onclick="togglePostit()" id="postit-toggle-btn" title="Post-it" style="display:none">📝</button>
+
+<script>
+/* ═══ TODOLIST ═══ */
+const defaultData = {
+  daily:[
+    {id:1,label:"Quêtes quotidiennes PvE [x5]",checked:false},
+    {id:2,label:"Supply Request",checked:false},
+    {id:3,label:"Couloir Abysse (Artefacts) [48H RE-UP]",checked:false},
+  ],
+  weekly:[
+    {id:1,label:"Raid [x3]",checked:false},
+    {id:2,label:"Ascension Trial [x3]",checked:false},
+    {id:3,label:"Donjon Quotidien [x7]",checked:false},
+    {id:4,label:"Donjon du Cauchemar (Nightmare) [x14]",checked:false},
+    {id:5,label:"Quêtes Abysse Supp [x20] (~1m3 Kina)",checked:false},
+    {id:6,label:"Quêtes Abysse Command [x20] (~1m3 Kina)",checked:false},
+    {id:7,label:"Quêtes hebdo PvE Command [x12]",checked:false},
+    {id:8,label:"Supply Request",checked:false},
+    {id:9,label:"Craft Odyle énergie morph",checked:false},
+    {id:10,label:"Achat SHOP Odyle énergie (100K Kina/unité)",checked:false},
+  ]
+};
+
+let data = JSON.parse(localStorage.getItem('aion2todo')||'null') || JSON.parse(JSON.stringify(defaultData));
+let nextId = {daily:100,weekly:100};
+
+document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).toUpperCase();
+
+function save() { localStorage.setItem('aion2todo',JSON.stringify(data)); }
+
+function render(s) {
+  const list = document.getElementById(`${s}-list`);
+  const tasks = data[s];
+  list.innerHTML = '';
+  if (!tasks.length) { list.innerHTML=`<div class="empty-state">— Aucune tâche active —</div>`; }
+  else {
+    tasks.forEach((task,idx) => {
+      const div = document.createElement('div');
+      div.className = `task-item${task.checked?' checked':''}`;
+      const cc = s==='daily'?'#d4a832':'#4a7fd4';
+      div.innerHTML = `
+        <div class="checkbox"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="${cc}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="task-label">${escHtml(task.label)}</span>
+        <span class="del-btn" onclick="event.stopPropagation();delTask('${s}',${idx})">✕</span>`;
+      div.addEventListener('click',()=>toggle(s,idx));
+      list.appendChild(div);
+    });
+  }
+  const done = tasks.filter(t=>t.checked).length;
+  document.getElementById(`${s}-progress`).textContent = `${done} / ${tasks.length}`;
+}
+
+function toggle(s,idx){data[s][idx].checked=!data[s][idx].checked;save();render(s);}
+function delTask(s,idx){data[s].splice(idx,1);save();render(s);}
+function addTask(s){
+  const input=document.getElementById(`${s}-input`);
+  const val=input.value.trim(); if(!val)return;
+  data[s].push({id:nextId[s]++,label:val,checked:false});
+  input.value=''; save(); render(s);
+}
+function handleKey(e,s){if(e.key==='Enter')addTask(s);}
+function resetSection(s){data[s].forEach(t=>t.checked=false);save();render(s);}
+function resetAll(){['daily','weekly'].forEach(s=>{data[s].forEach(t=>t.checked=false);});save();render('daily');render('weekly');}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+render('daily'); render('weekly');
+
+/* ═══ LIENS UTILES ═══ */
+let links = JSON.parse(localStorage.getItem('aion2links')||'[]');
+
+function saveLinks(){localStorage.setItem('aion2links',JSON.stringify(links));}
+
+function getFavicon(url){
+  try {
+    const u = new URL(url.startsWith('http')?url:'https://'+url);
+    return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=32`;
+  } catch { return null; }
+}
+
+function renderLinks(){
+  const list = document.getElementById('links-list');
+  list.innerHTML = '';
+  if(!links.length){
+    list.innerHTML = `<div class="links-empty">— Aucun lien enregistré —</div>`;
+    return;
+  }
+  links.forEach((lk,idx) => {
+    const item = document.createElement('div');
+    item.className = 'link-item';
+    const fav = getFavicon(lk.url);
+    const imgHtml = fav
+      ? `<img class="link-favicon" src="${fav}" onerror="this.outerHTML='<div class=\\'link-favicon-fallback\\'>🔗</div>'">`
+      : `<div class="link-favicon-fallback">🔗</div>`;
+    const href = lk.url.startsWith('http')?lk.url:'https://'+lk.url;
+    item.innerHTML = `
+      ${imgHtml}
+      <a class="link-anchor" href="${escHtml(href)}" target="_blank" rel="noopener" title="${escHtml(lk.url)}">${escHtml(lk.label||lk.url)}</a>
+      <span class="link-del" onclick="delLink(${idx})">✕</span>`;
+    list.appendChild(item);
+  });
+}
+
+function addLink(){
+  const labelIn = document.getElementById('link-label-input');
+  const urlIn   = document.getElementById('link-url-input');
+  const url   = urlIn.value.trim();
+  const label = labelIn.value.trim() || url;
+  if(!url) return;
+  links.push({label,url});
+  labelIn.value=''; urlIn.value='';
+  saveLinks(); renderLinks();
+}
+
+function delLink(idx){links.splice(idx,1);saveLinks();renderLinks();}
+
+function handleLinkKey(e){if(e.key==='Enter')addLink();}
+
+renderLinks();
+
+/* ═══ POST-IT ═══ */
+const postit=document.getElementById('postit');
+const postitBody=document.getElementById('postit-body');
+const postitText=document.getElementById('postit-text');
+const toggleBtn=document.getElementById('postit-toggle-btn');
+const savedPos=JSON.parse(localStorage.getItem('postit-pos')||'null');
+postitText.value=localStorage.getItem('postit-note')||'';
+if(savedPos){postit.style.left=savedPos.x+'px';postit.style.top=savedPos.y+'px';}
+else{postit.style.right='30px';postit.style.top='80px';}
+if(localStorage.getItem('postit-visible')==='false'){postitBody.style.display='none';toggleBtn.style.display='flex';postit.style.display='none';}
+function savePostit(){localStorage.setItem('postit-note',postitText.value);}
+function clearPostit(){postitText.value='';savePostit();}
+function togglePostit(){
+  const hidden=postitBody.style.display==='none';
+  if(hidden){postit.style.display='flex';postitBody.style.display='flex';toggleBtn.style.display='none';localStorage.setItem('postit-visible','true');}
+  else{postitBody.style.display='none';postit.style.display='none';toggleBtn.style.display='flex';localStorage.setItem('postit-visible','false');}
+}
+const handle=document.getElementById('postit-handle');
+let dragging=false,ox=0,oy=0;
+handle.addEventListener('mousedown',e=>{dragging=true;const r=postit.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;postit.style.right='auto';e.preventDefault();});
+document.addEventListener('mousemove',e=>{if(!dragging)return;let x=e.clientX-ox,y=e.clientY-oy;x=Math.max(0,Math.min(window.innerWidth-postit.offsetWidth,x));y=Math.max(0,Math.min(window.innerHeight-postit.offsetHeight,y));postit.style.left=x+'px';postit.style.top=y+'px';localStorage.setItem('postit-pos',JSON.stringify({x,y}));});
+document.addEventListener('mouseup',()=>{dragging=false;});
+handle.addEventListener('touchstart',e=>{const t=e.touches[0];dragging=true;const r=postit.getBoundingClientRect();ox=t.clientX-r.left;oy=t.clientY-r.top;postit.style.right='auto';},{passive:true});
+document.addEventListener('touchmove',e=>{if(!dragging)return;const t=e.touches[0];let x=t.clientX-ox,y=t.clientY-oy;x=Math.max(0,Math.min(window.innerWidth-postit.offsetWidth,x));y=Math.max(0,Math.min(window.innerHeight-postit.offsetHeight,y));postit.style.left=x+'px';postit.style.top=y+'px';localStorage.setItem('postit-pos',JSON.stringify({x,y}));},{passive:true});
+document.addEventListener('touchend',()=>{dragging=false;});
+</script>
+</body>
+</html>
